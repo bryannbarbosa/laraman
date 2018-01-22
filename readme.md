@@ -48,7 +48,7 @@ php artisan laraman:export
 If you need to change the default port (8000), then specify the port as follows:
 
 ```
-// This will set the port to 9000.
+// This will set the port to 9000
 // Example: http://localhost:9000/api/users
 
 php artisan laraman:export --port=9000
