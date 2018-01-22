@@ -35,7 +35,6 @@ You can also specify the route types as follows:
 Only `API` routes
 ```
 php artisan laraman:export --api
-
 ```
 Only `Web` routes
 ```
