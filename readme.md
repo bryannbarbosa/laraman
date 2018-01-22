@@ -29,3 +29,18 @@ This will place a `laraman-export.json` inside your `storage/app` folder. You ar
 ```
 php artisan laraman:export --name=my-app
 ```
+
+You can also specify the route types as follows:
+
+```
+// For API routes
+php artisan laraman:export --api
+
+// For Web routes
+php artisan laraman:export --web
+
+// For All routes
+php artisan laraman:export
+(or)
+php artisan laraman:export --api --web
+```

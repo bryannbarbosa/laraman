@@ -57,13 +57,15 @@ class ExportRoutesToPostman extends Command
      */
     public function handle()
     {
-        if (!$this->option('api') && !$this->option('web')) {
-            $this->info("Please, specify the type of export with flags.\nYou can use --api or --web.");
-        } else {
-            $name = $this->option('name');
-            $port = $this->option('port');
-            // Set the base data.
-            $routes = [
+        $api = $this->option('api');
+        $web = $this->option('web');
+        if (!$api && !$web) {
+            $api = $web = true;
+        }
+        $name = $this->option('name');
+        $port = $this->option('port');
+        // Set the base data.
+        $routes = [
               'variables' => [],
               'info' => [
                   'name' => $name,
@@ -73,13 +75,13 @@ class ExportRoutesToPostman extends Command
               ]
           ];
 
-            foreach ($this->router->getRoutes() as $route) {
-                foreach ($route->methods as $method) {
-                    if ($method == 'HEAD') {
-                        continue;
-                    }
-                    if ($this->option('api') && $route->middleware()[0] == "api") {
-                        $routes['item'][] = [
+        foreach ($this->router->getRoutes() as $route) {
+            foreach ($route->methods as $method) {
+                if ($method == 'HEAD') {
+                    continue;
+                }
+                if ($api && $route->middleware()[0] == "api") {
+                    $routes['item'][] = [
                         'name' => $method.' | '.$route->uri(),
                         'request' => [
                             'url' => url(':' . $port . '/' . $route->uri()),
@@ -99,9 +101,9 @@ class ExportRoutesToPostman extends Command
                         ],
                         'response' => [],
                     ];
-                    }
-                    if ($this->option('web') && $route->middleware()[0] == "web") {
-                        $routes['item'][] = [
+                }
+                if ($web && $route->middleware()[0] == "web") {
+                    $routes['item'][] = [
                         'name' => $method.' | '.$route->uri(),
                         'request' => [
                             'url' => url(':' . $port . '/' . $route->uri()),
@@ -121,14 +123,13 @@ class ExportRoutesToPostman extends Command
                         ],
                         'response' => [],
                     ];
-                    }
                 }
             }
-            if (! $this->files->put($name.'.json', json_encode($routes))) {
-                $this->error('Export failed');
-            } else {
-                $this->info('Routes exported!');
-            }
+        }
+        if (! $this->files->put($name.'.json', json_encode($routes))) {
+            $this->error('Export failed');
+        } else {
+            $this->info('Routes exported!');
         }
     }
 }
