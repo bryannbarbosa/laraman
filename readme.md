@@ -32,15 +32,16 @@ php artisan laraman:export --name=my-app
 
 You can also specify the route types as follows:
 
+Only API routes
 ```
-// For API routes
 php artisan laraman:export --api
 
-// For Web routes
+```
+Only Web routes
+```
 php artisan laraman:export --web
-
-// For All routes
+```
+All available routes (default)
+```
 php artisan laraman:export
-(or)
-php artisan laraman:export --api --web
 ```
