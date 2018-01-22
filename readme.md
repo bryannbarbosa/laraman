@@ -44,3 +44,9 @@ php artisan laraman:export --web
 ```
 php artisan laraman:export
 ```
+
+If you need to change the default port (8000), then specify the port as follows:
+
+```
+php artisan laraman:export --port=9000 // Use port 9000 to export
+```
