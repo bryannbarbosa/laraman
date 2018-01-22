@@ -81,10 +81,12 @@ class ExportRoutesToPostman extends Command
                     continue;
                 }
                 if ($api && $route->middleware()[0] == "api") {
+                    $url = url('');
+                    $url .= ':' . $port . '/' . $route->uri();
                     $routes['item'][] = [
-                        'name' => $method.' | '.$route->uri(),
+                        'name' => $method.' '.$route->uri(),
                         'request' => [
-                            'url' => url(':' . $port . '/' . $route->uri()),
+                            'url' => $url,
                             'method' => strtoupper($method),
                             'header' => [
                                 [
@@ -103,10 +105,16 @@ class ExportRoutesToPostman extends Command
                     ];
                 }
                 if ($web && $route->middleware()[0] == "web") {
+                    $url = url('');
+                    $uri = $route->uri();
+                    if ($route->uri() == '/') {
+                        $uri = null;
+                    }
+                    $url .= ':' . $port . '/' . $uri;
                     $routes['item'][] = [
-                        'name' => $method.' | '.$route->uri(),
+                        'name' => $method.' '.$route->uri(),
                         'request' => [
-                            'url' => url(':' . $port . '/' . $route->uri()),
+                            'url' => $url,
                             'method' => strtoupper($method),
                             'header' => [
                                 [
