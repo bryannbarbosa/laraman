@@ -14,7 +14,7 @@ class ExportRoutesToPostman extends Command
      *
      * @var string
      */
-    protected $signature = 'laraman:export {--name=laraman-export} {--search=} {--port=8000}';
+    protected $signature = 'laraman:export {--name=laraman-export} {--port=8000}';
 
     /**
      * The console command description.

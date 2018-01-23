@@ -30,21 +30,6 @@ This will place a `laraman-export.json` inside your `storage/app` folder. You ar
 php artisan laraman:export --name=my-app
 ```
 
-You can also specify the route types as follows:
-
-Only `API` routes
-```
-php artisan laraman:export --api
-```
-Only `Web` routes
-```
-php artisan laraman:export --web
-```
-`All` available routes (default)
-```
-php artisan laraman:export
-```
-
 If you need to change the default port (8000), then specify the port as follows:
 
 ```
