@@ -14,7 +14,7 @@ class ExportRoutesToPostman extends Command
      *
      * @var string
      */
-    protected $signature = 'laraman:export {--name=laraman-export} {--api} {--web} {--port=8000}';
+    protected $signature = 'laraman:export {--name=laraman-export} {--search=} {--port=8000}';
 
     /**
      * The console command description.
@@ -57,11 +57,7 @@ class ExportRoutesToPostman extends Command
      */
     public function handle()
     {
-        $api = $this->option('api');
-        $web = $this->option('web');
-        if (!$api && !$web) {
-            $api = $web = true;
-        }
+        $pattern = $this->option('search');
         $name = $this->option('name');
         $port = $this->option('port');
         // Set the base data.
@@ -71,7 +67,7 @@ class ExportRoutesToPostman extends Command
                   'name' => $name,
                   '_postman_id' => Uuid::uuid4(),
                   'description' => '',
-                  'schema' => 'https://schema.getpostman.com/json/collection/v2.0.0/collection.json',
+                  'schema' => 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
               ]
           ];
 
@@ -80,58 +76,32 @@ class ExportRoutesToPostman extends Command
                 if ($method == 'HEAD') {
                     continue;
                 }
-                if ($api && $route->middleware()[0] == "api") {
-                    $url = url('');
-                    $url .= ':' . $port . '/' . $route->uri();
-                    $routes['item'][] = [
-                        'name' => $method.' '.$route->uri(),
-                        'request' => [
-                            'url' => $url,
-                            'method' => strtoupper($method),
-                            'header' => [
-                                [
-                                    'key' => 'Content-Type',
-                                    'value' => 'application/json',
-                                    'description' => ''
-                                ]
-                            ],
-                            'body' => [
-                                'mode' => 'raw',
-                                'raw' => '{\n    \n}'
-                            ],
-                            'description' => '',
-                        ],
-                        'response' => [],
-                    ];
+                $uri = $route->uri();
+                if($uri == '/') {
+                  $uri = null;
                 }
-                if ($web && $route->middleware()[0] == "web") {
-                    $url = url('');
-                    $uri = $route->uri();
-                    if ($route->uri() == '/') {
-                        $uri = null;
-                    }
-                    $url .= ':' . $port . '/' . $uri;
-                    $routes['item'][] = [
-                        'name' => $method.' '.$route->uri(),
-                        'request' => [
-                            'url' => $url,
-                            'method' => strtoupper($method),
-                            'header' => [
-                                [
-                                    'key' => 'Content-Type',
-                                    'value' => 'text/html',
-                                    'description' => ''
-                                ]
-                            ],
-                            'body' => [
-                                'mode' => 'raw',
-                                'raw' => '{\n    \n}'
-                            ],
-                            'description' => '',
-                        ],
-                        'response' => [],
-                    ];
-                }
+                $url = url()->full();
+                $url .= ':' . $port . '/' . $uri;
+                $routes['item'][] = [
+                          'name' => $method.' '.$route->uri(),
+                          'request' => [
+                              'url' => $url,
+                              'method' => strtoupper($method),
+                              'header' => [
+                                  [
+                                      'key' => 'Content-Type',
+                                      'value' => 'application/json',
+                                      'description' => ''
+                                  ]
+                              ],
+                              'body' => [
+                                  'mode' => 'raw',
+                                  'raw' => '{\n    \n}'
+                              ],
+                              'description' => '',
+                          ],
+                          'response' => [],
+                        ];
             }
         }
         if (! $this->files->put($name.'.json', json_encode($routes))) {
