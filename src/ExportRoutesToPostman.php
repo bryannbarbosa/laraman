@@ -93,7 +93,7 @@ class ExportRoutesToPostman extends Command
                             ],
                             'body' => [
                                 'mode' => 'raw',
-                                'raw' => '{\n    \n}'
+                                'raw' => "{\n    \n}"
                             ],
                             'description' => '',
                         ],
