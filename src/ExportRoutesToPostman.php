@@ -78,11 +78,19 @@ class ExportRoutesToPostman extends Command
                     if ($method == 'HEAD') {
                         continue;
                     }
+                    $alias = $route->uri();
+                    if ($route->uri() == '/') {
+                        $uri = null;
+                    } else {
+                    $uri = $route->uri();
+                    }
+                $server = url()->current();
+                $url = "${server}:${port}/${uri}";
                     if ($this->option('api') && $route->middleware()[0] == "api") {
                         $routes['item'][] = [
-                        'name' => $method.' | '.$route->uri(),
+                        'name' => "${method} ${alias}",
                         'request' => [
-                            'url' => url(':' . $port . '/' . $route->uri()),
+                            'url' => $url,
                             'method' => strtoupper($method),
                             'header' => [
                                 [
