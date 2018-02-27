@@ -1,6 +1,6 @@
 # Laraman
 
-Have you ever been building a huge API and you're sitting there with Postman to quickly look at your requests? It's tedious, right? So much copy-pasting routes and keeping track of them. Maybe at one point you started making some Postman collections? What if there was a better way, an easier way? There is. Laraman allows you to export all the routes that are registered in your application to a json file that can be imported into Postman.
+Have you ever been building a huge API and you're sitting there with Postman to quickly look at your requests? It's tedious, right? So much copy-pasting routes and keeping track of them. Maybe at one point you started making some Postman collections? What if there was a better way, an easier way? There is. Laraman allows you to export all the routes (with params) that are registered in your application to a json file that can be imported into Postman.
 
 ## Installation
 Install via composer:
@@ -37,4 +37,10 @@ If you need to change the default port (8000), then specify the port as follows:
 // Example: http://localhost:9000/users
 
 php artisan laraman:export --port=9000
+```
+
+If you get especific routes by middleware, then use the flag match:
+
+```
+php artisan laraman:export --match="api"
 ```
