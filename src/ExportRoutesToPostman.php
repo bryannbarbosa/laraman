@@ -54,6 +54,7 @@ class ExportRoutesToPostman extends Command
         $name = $this->option('name');
         $port = $this->option('port');
         $search = $this->option('match');
+        $request = null;
         // Set the base data.
         $routes = [
             'variables' => [],
@@ -79,10 +80,56 @@ class ExportRoutesToPostman extends Command
                 }
 
                 $server = url()->current();
-                $url = "{$server}:${port}/${uri}";
+                $url = "${server}:${port}/${uri}";
 
                 if ($search) {
                     if (in_array($search, $route->middleware())) {
+                        if ($route->getActionName() == 'Closure' && $method != 'get') {
+                            if (in_array('api', $route->middleware())) {
+                                $code = file_get_contents(base_path('routes/api.php'));
+                            }
+                            if (in_array('web', $route->middleware())) {
+                                $code = file_get_contents(base_path('routes/web.php'));
+                            }
+                            $function = $this->getFunction($code, $route->uri(), $route->getActionName());
+                            $request = $this->getRequest($function, null, $route->getActionName());
+                            $params = $this->getParams($function, $request);
+                            if (count($params) == 1) {
+                                for ($i = 0; $i < count($params); $i++) {
+                                    $params[$i] = "    \"" . $params[$i] . "\": \"\"";
+                                }
+                            }
+                            if (count($params) > 1) {
+                                for ($i = 0; $i < count($params); $i++) {
+                                    $params[$i] = "    \"" . $params[$i];
+                                }
+                                $length = count($params);
+                                $params[$length - 1] = $params[$length - 1] . "\": \"\"";
+                            }
+
+                            $paramsList = implode("\": \"\",\n", $params);
+                        } else {
+                            $functionName = substr($route->getActionName(), strpos($route->getActionName(), "@") + 1);
+                            $path = substr($route->getActionName(), 0, strpos($route->getActionName(), "@")) . '.php';
+                            $code = file_get_contents(base_path($path));
+                            if ($code != null) {
+                                $request = $this->getRequest($code, $functionName, $route->getActionName());
+                                $params = $this->getParams($code, $request);
+                                if (count($params) == 1) {
+                                    for ($i = 0; $i < count($params); $i++) {
+                                        $params[$i] = "    \"" . $params[$i] . "\": \"\"";
+                                    }
+                                }
+                                if (count($params) > 1) {
+                                    for ($i = 0; $i < count($params); $i++) {
+                                        $params[$i] = "    \"" . $params[$i];
+                                    }
+                                    $length = count($params);
+                                    $params[$length - 1] = $params[$length - 1] . "\": \"\"";
+                                }
+                                $paramsList = implode("\": \"\",\n", $params);
+                            }
+                        }
                         $routes['item'][] = [
                         'name' => "${method} ${alias}",
                         'request' => [
@@ -97,15 +144,70 @@ class ExportRoutesToPostman extends Command
                             ],
                             'body' => [
                                 'mode' => 'raw',
-                                'raw' => '{\n    \n}'
+                                'raw' => "{\n    \n}"
                             ],
                             'description' => '',
                         ],
                         'response' => [],
                     ];
-                  }
+                    }
                 }
                 if (!$search) {
+                    if ($route->getActionName() == 'Closure' && $method != 'get') {
+                        if (in_array('api', $route->middleware())) {
+                            $code = file_get_contents(base_path('routes/api.php'));
+                        }
+                        if (in_array('web', $route->middleware())) {
+                            $code = file_get_contents(base_path('routes/web.php'));
+                        }
+                        $function = $this->getFunction($code, $route->uri(), $route->getActionName());
+                        $request = $this->getRequest($function, null, $route->getActionName());
+                        $params = $this->getParams($function, $request);
+                        if (count($params) == 1) {
+                            for ($i = 0; $i < count($params); $i++) {
+                                $params[$i] = "    \"" . $params[$i] . "\": \"\"";
+                            }
+                        }
+                        if (count($params) > 1) {
+                            for ($i = 0; $i < count($params); $i++) {
+                                $params[$i] = "    \"" . $params[$i];
+                            }
+                            $length = count($params);
+                            $params[$length - 1] = $params[$length - 1] . "\": \"\"";
+                        }
+
+                        $paramsList = implode("\": \"\",\n", $params);
+                    } else {
+                        $functionName = substr($route->getActionName(), strpos($route->getActionName(), "@") + 1);
+                        $path = substr($route->getActionName(), 0, strpos($route->getActionName(), "@")) . '.php';
+                        $condition = true;
+                        try {
+                            $code = file_get_contents(base_path($path));
+                        } catch(\Exception $e) {
+                            $this->info('Error in reading file (route ' . $alias .'): ' . $e->getMessage());
+                            $condition = false;
+                        }
+                        
+                        if ($condition) {
+                            $request = $this->getRequest($code, $functionName, $route->getActionName());
+                            $params = $this->getParams($code, $request);
+                            if (count($params) == 1) {
+                                for ($i = 0; $i < count($params); $i++) {
+                                    $params[$i] = "    \"" . $params[$i] . "\": \"\"";
+                                }
+                            }
+                            if (count($params) > 1) {
+                                for ($i = 0; $i < count($params); $i++) {
+                                    $params[$i] = "    \"" . $params[$i];
+                                }
+                                $length = count($params);
+                                $params[$length - 1] = $params[$length - 1] . "\": \"\"";
+                            }
+                            $paramsList = implode("\": \"\",\n", $params);
+                        } else {
+                            $paramsList = '';
+                        }
+                    }
                     $routes['item'][] = [
                       'name' => "${method} ${alias}",
                       'request' => [
@@ -120,7 +222,7 @@ class ExportRoutesToPostman extends Command
                           ],
                           'body' => [
                               'mode' => 'raw',
-                              'raw' => '{\n    \n}'
+                              'raw' => "{\n" . $paramsList . "\n}"
                           ],
                           'description' => '',
                       ],
@@ -129,10 +231,73 @@ class ExportRoutesToPostman extends Command
                 }
             }
         }
-        if (! $this->files->put($name.'.json', json_encode($routes))) {
+        if (!$this->files->put($name.'.json', json_encode($routes))) {
             $this->error('Export failed');
         } else {
             $this->info('Routes exported!');
         }
+    }
+    public function getFunction($code, $match = null, $type)
+    {
+        if ($match == '/') {
+            preg_match('/\/\'(.*?)\)/', $code, $matches);
+            if ($matches) {
+                return $matches[0];
+            }
+        } else {
+            $match = str_replace('api/', '', $match);
+            preg_match("/\/${match}(.*?)}/s", $code, $matches);
+            if ($matches) {
+                return $matches[0];
+            }
+        }
+    }
+
+    public function getRequest($code, $match, $type)
+    {
+        if ($type == 'Closure') {
+            preg_match_all('/(?<=Request.)((\$\w+))/', $code, $request);
+            return $request[0][0];
+        }
+        if ($type != 'Closure') {
+            preg_match_all('/(?<='. $match . '\(Request.)\$(\w+)/', $code, $request);
+            return $request[0][0];
+        }
+    }
+
+    public function getParams($code, $request)
+    {
+        $request = substr($request, 1);
+        $params = [];
+        preg_match_all('/(?<=\$'. $request . '\-\>(input|query)\(\')(\w+)(\'?\,?\s?\'?\w+)/s', $code, $input_query);
+        preg_match_all('/(?<=\$'. $request . '\-\>(only)\(\')(\w+)(\'?\,?\s?\'?\w+)/s', $code, $only);
+        foreach ($input_query[0] as $param) {
+            if ($param != null) {
+                if (strpos($param, ',') !== false) {
+                    $param_filter = preg_replace('/\s+/', '', $param);
+                    $param_filter = preg_replace('/\'+/', '', $param_filter);
+                    $words = explode(',', $param_filter);
+                    foreach ($words as $value) {
+                        array_push($params, $value);
+                    }
+                } else {
+                    array_push($params, $param);
+                }
+            }
+        }
+        foreach ($only[0] as $param) {
+            if ($param != null) {
+                if (strpos($param, ',') !== false) {
+                    $param_filter = preg_replace('/\s+/', '', $param);
+                    $words = explode(',', $param_filter);
+                    foreach ($words as $value) {
+                        array_push($params, $value);
+                    }
+                } else {
+                    array_push($params, $param);
+                }
+            }
+        }
+        return $params;
     }
 }
